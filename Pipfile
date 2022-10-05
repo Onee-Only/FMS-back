@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 django = "==3.2"
 djangorestframework = "*"
+django-crontab = "*"
+django-rest-auth = "*"
+django-allauth = "*"
 
 [dev-packages]
 flake8 = "*"
