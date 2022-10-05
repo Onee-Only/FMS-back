@@ -47,3 +47,9 @@ class UserManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
         fields = ("pk", "username", "is_staff", "grade", "goals", "assists")
+
+
+class GameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Game
+        fields = ("date", "time", "status", "teams")

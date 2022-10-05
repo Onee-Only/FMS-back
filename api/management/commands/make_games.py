@@ -1,0 +1,30 @@
+import datetime
+from django.core.management.base import BaseCommand
+from api.models import Game, Team
+
+
+class Command(BaseCommand):
+
+    help = "this command creates games"
+
+    def handle(self, *args, **options):
+        now = datetime.datetime.now().date()
+        if Game.objects.filter(date=now).count != 2:
+            lunch_game = Game.objects.create(
+                status=Game.Status.BEFORE, time=Game.Times.LUNCH
+            )
+            create_team(lunch_game)
+            lunch_game = Game.objects.create(
+                status=Game.Status.BEFORE, time=Game.Times.LUNCH
+            )
+            create_team(lunch_game)
+            print(f"{now} : Games created.")
+        else:
+            print(f"{now} : Games already exist.")
+
+
+def create_team(obj):
+    team1 = Team.objects.create()
+    obj.teams.add(team1)
+    team2 = Team.objects.create()
+    obj.teams.add(team2)
