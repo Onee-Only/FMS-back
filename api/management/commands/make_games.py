@@ -10,10 +10,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         now = datetime.datetime.now().date()
         if Game.objects.filter(date=now).count != 2:
-            lunch_game = Game.objects.create(
-                status=Game.Status.BEFORE, time=Game.Times.LUNCH
+            dinner_game = Game.objects.create(
+                status=Game.Status.BEFORE, time=Game.Times.DINNER
             )
-            create_team(lunch_game)
+            create_team(dinner_game)
             lunch_game = Game.objects.create(
                 status=Game.Status.BEFORE, time=Game.Times.LUNCH
             )

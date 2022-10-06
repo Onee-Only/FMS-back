@@ -1,11 +1,14 @@
 from django.http import Http404
+from django.shortcuts import redirect, reverse
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListAPIView,
     RetrieveUpdateDestroyAPIView,
     RetrieveUpdateAPIView,
+    GenericAPIView,
 )
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated
 from . import models, serializers, utils
 
 
@@ -39,7 +42,7 @@ class UserManageView(RetrieveUpdateDestroyAPIView):
             or serializer.validated_data.get("assists") is not None
         ):
             if not request.user.is_staff:
-                raise Http404()
+                raise PermissionDenied()
         self.perform_update(serializer)
 
         if getattr(instance, "_prefetched_objects_cache", None):
@@ -51,11 +54,40 @@ class UserManageView(RetrieveUpdateDestroyAPIView):
 
 
 class GameListView(ListAPIView):
-    queryset = models.Game.objects.all()
+    queryset = models.Game.objects.order_by("-id")
     serializer_class = serializers.GameSerializer
+    pagination_class = utils.GamePagenation
 
 
 class GameDetailView(RetrieveUpdateAPIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [utils.IsStaffOrOwnerOrReadOnly]
     queryset = models.Game.objects.all()
     serializer_class = serializers.GameSerializer
+
+
+class AddGameMemberView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = models.Game.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        game = self.queryset.get(pk=kwargs["game_pk"])
+        try:
+            qs = models.Team.objects.all()
+            team = qs.get(pk=kwargs["team_pk"])
+
+            for game_team in qs.filter(games=game):
+                if request.user in game_team.members.all():
+                    if game_team.pk != team.pk:
+                        return Response({"에러": "이미 다른 팀에 소속돼 있습니다."})
+                    team.members.remove(request.user)
+                    return self.save_and_redirect(team, game)
+
+            team.members.add(request.user)
+            return self.save_and_redirect(team, game)
+
+        except models.Team.DoesNotExist:
+            raise Http404()
+
+    def save_and_redirect(self, team, game):
+        team.save()
+        return redirect(reverse("api:game-detail", kwargs={"pk": game.pk}))

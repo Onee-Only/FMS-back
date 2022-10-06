@@ -38,7 +38,7 @@ class Game(models.Model):
     date = models.DateField(auto_now_add=True)
     status = models.CharField(choices=Status.choices, max_length=8)
     time = models.CharField(choices=Times.choices, max_length=6)
-    teams = models.ManyToManyField("Team", related_name="+")
+    teams = models.ManyToManyField("Team", related_name="games")
 
 
 class Team(models.Model):

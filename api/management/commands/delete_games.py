@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         games = Game.objects.all()
         for game in games:
-            for team in game.teams:
+            for team in game.teams.all():
                 team.delete()
             game.delete()
         print("Games deleted")
