@@ -2,6 +2,28 @@ from django.contrib.auth import get_user_model
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.pagination import PageNumberPagination
 
+from rest_framework import mixins
+from rest_framework.generics import GenericAPIView
+
+
+class CreateUpdateDestroyAPIView(
+    GenericAPIView,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
 
 class IsStaffOrOwnerOrReadOnly(BasePermission):
     def has_object_permission(self, request, view, obj):

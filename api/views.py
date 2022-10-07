@@ -8,7 +8,7 @@ from rest_framework.generics import (
     GenericAPIView,
 )
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from . import models, serializers, utils
 
 
@@ -71,23 +71,53 @@ class AddGameMemberView(GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         game = self.queryset.get(pk=kwargs["game_pk"])
-        try:
-            qs = models.Team.objects.all()
-            team = qs.get(pk=kwargs["team_pk"])
+        if game.status == models.Game.Status.BEFORE:
+            try:
+                qs = models.Team.objects.all()
+                team = qs.get(pk=kwargs["team_pk"])
 
-            for game_team in qs.filter(games=game):
-                if request.user in game_team.members.all():
-                    if game_team.pk != team.pk:
-                        return Response({"에러": "이미 다른 팀에 소속돼 있습니다."})
-                    team.members.remove(request.user)
-                    return self.save_and_redirect(team, game)
+                for game_team in qs.filter(game=game):
+                    if request.user in game_team.members.all():
+                        if game_team.pk != team.pk:
+                            return Response({"에러": "이미 다른 팀에 소속돼 있습니다."})
+                        team.members.remove(request.user)
+                        return self.save_and_redirect(team, game)
 
-            team.members.add(request.user)
-            return self.save_and_redirect(team, game)
+                team.members.add(request.user)
+                return self.save_and_redirect(team, game)
 
-        except models.Team.DoesNotExist:
-            raise Http404()
+            except models.Team.DoesNotExist:
+                raise Http404()
+        else:
+            return Response({"에러": "신청 시간이 지났습니다."})
 
     def save_and_redirect(self, team, game):
         team.save()
         return redirect(reverse("api:game-detail", kwargs={"pk": game.pk}))
+
+
+class GameGoalManageView(utils.CreateUpdateDestroyAPIView):
+    permission_classes = [IsAdminUser]
+
+    def get_object(self):
+        return self.get_queryset()
+
+    def get_queryset(self):
+        try:
+            queryset = models.Goal.objects.get(pk=self.kwargs.get("goal_pk"))
+            return queryset
+        except models.Game.DoesNotExist or models.Goal.DoesNotExist:
+            raise Http404()
+
+
+class GameGoalListView(ListAPIView):
+    def get_object(self):
+        return self.get_queryset()
+
+    def get_queryset(self):
+        try:
+            game = models.Game.objects.get(pk=self.kwargs.get("game_pk"))
+            goal = models.Goal.objects.filter(game=game)
+            return goal
+        except models.Game.DoesNotExist or models.Goal.DoesNotExist:
+            raise Http404()

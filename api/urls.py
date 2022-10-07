@@ -8,5 +8,7 @@ urlpatterns = [
     path("user/<int:pk>/", views.UserManageView.as_view()),
     path("game/", views.GameListView.as_view()),
     path("game/<int:pk>/", views.GameDetailView.as_view(), name="game-detail"),
+    path("game/<int:game_pk>/goal/", views.GameGoalListView.as_view()),
+    path("game/<int:game_pk>/goal/<int:goal_pk>/", views.GameGoalManageView.as_view()),
     path("game/<int:game_pk>/team/<int:team_pk>/", views.AddGameMemberView.as_view()),
 ]

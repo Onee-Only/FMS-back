@@ -38,16 +38,26 @@ class Game(models.Model):
     date = models.DateField(auto_now_add=True)
     status = models.CharField(choices=Status.choices, max_length=8)
     time = models.CharField(choices=Times.choices, max_length=6)
-    teams = models.ManyToManyField("Team", related_name="games")
+    teams = models.ManyToManyField("Team", related_name="game")
 
 
 class Team(models.Model):
     members = models.ManyToManyField("CustomUser", related_name="+")
 
+    def get_member_goals_count(self):
+        game = self.game.all()[0]
+        goals = Goal.objects.filter(game=game)
+        sum = 0
+        for member in self.members.all():
+            for goal in goals:
+                if member.pk == goal.goal_player.pk:
+                    sum += 1
+        return sum
+
 
 class Goal(models.Model):
 
-    game = models.ForeignKey("Game", related_name="+", on_delete=models.CASCADE)
+    game = models.ForeignKey("Game", related_name="goals", on_delete=models.CASCADE)
     time = models.TimeField()
     goal_player = models.ForeignKey(
         "CustomUser", related_name="+", on_delete=models.DO_NOTHING

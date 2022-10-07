@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.fields import empty
 from rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
 from allauth.account.adapter import get_adapter
@@ -53,7 +52,7 @@ class UserManageSerializer(serializers.ModelSerializer):
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
-        fields = ("grade", "username")
+        fields = ("pk", "grade", "username")
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -61,11 +60,18 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Team
+        fields = ("members", "get_member_goals_count")
+
+
+class GoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Goal
         fields = "__all__"
 
 
 class GameSerializer(serializers.ModelSerializer):
     teams = TeamSerializer(many=True)
+    goals = GoalSerializer(many=True)
 
     class Meta:
         model = models.Game
