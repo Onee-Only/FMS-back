@@ -6,9 +6,8 @@ from rest_framework import mixins
 from rest_framework.generics import GenericAPIView
 
 
-class CreateUpdateDestroyAPIView(
+class UpdateDestroyAPIView(
     GenericAPIView,
-    mixins.CreateModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
@@ -17,9 +16,6 @@ class CreateUpdateDestroyAPIView(
 
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)

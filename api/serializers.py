@@ -1,3 +1,4 @@
+from django.http import Http404
 from rest_framework import serializers
 from rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
@@ -57,16 +58,36 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     members = MemberSerializer(many=True)
+    goals = serializers.IntegerField(source="get_member_goals_count")
 
     class Meta:
         model = models.Team
-        fields = ("members", "get_member_goals_count")
+        fields = ("members", "goals")
 
 
 class GoalSerializer(serializers.ModelSerializer):
+    team = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = models.Goal
         fields = "__all__"
+
+    def get_team(self, obj):
+        for team in obj.game.teams.all():
+            if obj.goal_player in team.members.all():
+                return team.pk
+        raise Http404()
+
+    def create(self, validated_data):
+        obj = models.Goal.objects.create(**validated_data)
+        obj.goals_assists_change(True)
+        return obj
+
+    def update(self, instance, validated_data):
+        instance.goals_assists_change(False)
+        instance = super().update(instance, validated_data)
+        instance.goals_assists_change(True)
+        return instance
 
 
 class GameSerializer(serializers.ModelSerializer):

@@ -1,8 +1,10 @@
 from django.http import Http404
 from django.shortcuts import redirect, reverse
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.generics import (
     ListAPIView,
+    ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
     RetrieveUpdateAPIView,
     GenericAPIView,
@@ -76,6 +78,9 @@ class AddGameMemberView(GenericAPIView):
                 qs = models.Team.objects.all()
                 team = qs.get(pk=kwargs["team_pk"])
 
+                if team.members.count() == 11:
+                    return Response({"에러": "팀이 모두 찼습니다."})
+
                 for game_team in qs.filter(game=game):
                     if request.user in game_team.members.all():
                         if game_team.pk != team.pk:
@@ -96,8 +101,9 @@ class AddGameMemberView(GenericAPIView):
         return redirect(reverse("api:game-detail", kwargs={"pk": game.pk}))
 
 
-class GameGoalManageView(utils.CreateUpdateDestroyAPIView):
+class GameGoalManageView(utils.UpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
+    serializer_class = serializers.GoalSerializer
 
     def get_object(self):
         return self.get_queryset()
@@ -109,8 +115,16 @@ class GameGoalManageView(utils.CreateUpdateDestroyAPIView):
         except models.Game.DoesNotExist or models.Goal.DoesNotExist:
             raise Http404()
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.goals_assists_change(False)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-class GameGoalListView(ListAPIView):
+
+class GameGoalListView(ListCreateAPIView):
+    serializer_class = serializers.GoalSerializer
+
     def get_object(self):
         return self.get_queryset()
 

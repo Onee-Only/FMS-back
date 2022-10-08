@@ -65,3 +65,10 @@ class Goal(models.Model):
     assist_player = models.ForeignKey(
         "CustomUser", related_name="+", on_delete=models.DO_NOTHING
     )
+
+    def goals_assists_change(self, is_creation):
+        num = 1 if is_creation else -1
+        self.goal_player.goals += num
+        self.goal_player.save()
+        self.assist_player.assists += num
+        self.assist_player.save()
