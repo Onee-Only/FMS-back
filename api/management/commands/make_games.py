@@ -11,11 +11,15 @@ class Command(BaseCommand):
         now = datetime.datetime.now().date()
         if Game.objects.filter(date=now).count != 2:
             dinner_game = Game.objects.create(
-                status=Game.Status.BEFORE, time=Game.Times.DINNER
+                weekday=now.isoweekday(),
+                status=Game.Status.BEFORE,
+                time=Game.Times.DINNER,
             )
             create_team(dinner_game)
             lunch_game = Game.objects.create(
-                status=Game.Status.BEFORE, time=Game.Times.LUNCH
+                weekday=now.isoweekday(),
+                status=Game.Status.BEFORE,
+                time=Game.Times.LUNCH,
             )
             create_team(lunch_game)
             print(f"{now} : Games created.")

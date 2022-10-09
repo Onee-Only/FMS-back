@@ -15,8 +15,18 @@ from . import models, serializers, utils
 
 
 class UserListView(ListAPIView):
-    queryset = models.CustomUser.objects.all()
     serializer_class = serializers.UserListSerializer
+
+    def get_queryset(self):
+        ordering = self.request.GET.get("ordering", None)
+        if ordering is not None:
+            if ordering == "goals":
+                queryset = models.CustomUser.objects.order_by("-goals")
+            elif ordering == "assists":
+                queryset = models.CustomUser.objects.order_by("-assists")
+        else:
+            queryset = models.CustomUser.objects.all()
+        return queryset
 
 
 class UserManageView(RetrieveUpdateDestroyAPIView):
@@ -48,17 +58,25 @@ class UserManageView(RetrieveUpdateDestroyAPIView):
         self.perform_update(serializer)
 
         if getattr(instance, "_prefetched_objects_cache", None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
 
 
 class GameListView(ListAPIView):
-    queryset = models.Game.objects.order_by("-id")
     serializer_class = serializers.GameSerializer
-    pagination_class = utils.GamePagenation
+
+    def get_queryset(self):
+        weekday = self.request.GET.get("weekday", None)
+        if weekday is not None:
+            weekday = int(weekday)
+            try:
+                queryset = models.Game.objects.filter(weekday=weekday)
+            except models.Game.DoesNotExist:
+                raise Http404()
+        else:
+            queryset = models.Game.objects.all()
+        return queryset
 
 
 class GameDetailView(RetrieveUpdateAPIView):
@@ -98,7 +116,7 @@ class AddGameMemberView(GenericAPIView):
 
     def save_and_redirect(self, team, game):
         team.save()
-        return redirect(reverse("api:game-detail", kwargs={"pk": game.pk}))
+        return redirect(reverse("api-v1:game-detail", kwargs={"pk": game.pk}))
 
 
 class GameGoalManageView(utils.UpdateDestroyAPIView):

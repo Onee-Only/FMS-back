@@ -36,6 +36,7 @@ class Game(models.Model):
         DINNER = "dinner", "저녁"
 
     date = models.DateField(auto_now_add=True)
+    weekday = models.IntegerField(default=0)
     status = models.CharField(choices=Status.choices, max_length=8)
     time = models.CharField(choices=Times.choices, max_length=6)
     teams = models.ManyToManyField("Team", related_name="game")
@@ -66,7 +67,7 @@ class Goal(models.Model):
         "CustomUser", related_name="+", on_delete=models.DO_NOTHING
     )
 
-    def goals_assists_change(self, is_creation):
+    def goals_assists_change(self, is_creation: bool):
         num = 1 if is_creation else -1
         self.goal_player.goals += num
         self.goal_player.save()

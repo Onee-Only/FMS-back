@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import BasePermission, SAFE_METHODS
-from rest_framework.pagination import PageNumberPagination
 
 from rest_framework import mixins
 from rest_framework.generics import GenericAPIView
@@ -36,7 +35,3 @@ class IsStaffOrOwnerOrReadOnly(BasePermission):
                     or obj.assist_player.id == request.user.id
                 )
         return False
-
-
-class GamePagenation(PageNumberPagination):
-    page_size = 2
