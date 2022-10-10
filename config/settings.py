@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -153,3 +154,30 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
 }
+
+CRONJOBS = [
+    # 게임 만들기
+    (
+        "10 8 * * 1-5",
+        "api.commands.GameManagement.create_games",
+        ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
+    ),
+    # 게임 지우기
+    (
+        "59 23 * * 7",
+        "api.commands.GameManagement.delete_games",
+        ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
+    ),
+    # 게임 스테이터스 게임중으로
+    (
+        "35 12,18 * * 1-5",
+        "api.commands.GameStatusManagement.status_to_playing",
+        ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
+    ),
+    # 게임 스테이터스 게임후로
+    (
+        "25 13,19 * * 1-5",
+        "api.commands.GameStatusManagement.status_to_after",
+        ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
+    ),
+]

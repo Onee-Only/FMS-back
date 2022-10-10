@@ -9,19 +9,20 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         now = datetime.datetime.now().date()
-        if Game.objects.filter(date=now).count != 2:
-            dinner_game = Game.objects.create(
-                weekday=now.isoweekday(),
-                status=Game.Status.BEFORE,
-                time=Game.Times.DINNER,
-            )
-            create_team(dinner_game)
+        if Game.objects.filter(date=now).count == 0:
             lunch_game = Game.objects.create(
                 weekday=now.isoweekday(),
                 status=Game.Status.BEFORE,
                 time=Game.Times.LUNCH,
             )
             create_team(lunch_game)
+            if now.isoweekday() != 5:
+                dinner_game = Game.objects.create(
+                    weekday=now.isoweekday(),
+                    status=Game.Status.BEFORE,
+                    time=Game.Times.DINNER,
+                )
+                create_team(dinner_game)
             print(f"{now} : Games created.")
         else:
             print(f"{now} : Games already exist.")

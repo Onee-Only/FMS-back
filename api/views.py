@@ -90,7 +90,9 @@ class AddGameMemberView(GenericAPIView):
     queryset = models.Game.objects.all()
 
     def get(self, request, *args, **kwargs):
+        
         game = self.queryset.get(pk=kwargs["game_pk"])
+        
         if game.status == models.Game.Status.BEFORE:
             try:
                 qs = models.Team.objects.all()
