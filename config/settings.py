@@ -159,25 +159,25 @@ CRONJOBS = [
     # 게임 만들기
     (
         "10 8 * * 1-5",
-        "api.commands.GameManagement.create_games",
+        "config.cron.create_games",
         ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
     ),
     # 게임 지우기
     (
         "59 23 * * 7",
-        "api.commands.GameManagement.delete_games",
+        "config.cron.delete_games",
         ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
     ),
     # 게임 스테이터스 게임중으로
     (
-        "35 12,18 * * 1-5",
-        "api.commands.GameStatusManagement.status_to_playing",
+        "00 13,19 * * 1-5",
+        "config.cron.status_to_playing",
         ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
     ),
     # 게임 스테이터스 게임후로
     (
-        "25 13,19 * * 1-5",
-        "api.commands.GameStatusManagement.status_to_after",
+        "30 13,19 * * 1-5",
+        "config.cron.status_to_after",
         ">> " + os.path.join(BASE_DIR, "config/log/games.log") + " 2>&1 ",
     ),
 ]

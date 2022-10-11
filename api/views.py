@@ -90,15 +90,15 @@ class AddGameMemberView(GenericAPIView):
     queryset = models.Game.objects.all()
 
     def get(self, request, *args, **kwargs):
-        
+
         game = self.queryset.get(pk=kwargs["game_pk"])
-        
+
         if game.status == models.Game.Status.BEFORE:
             try:
                 qs = models.Team.objects.all()
                 team = qs.get(pk=kwargs["team_pk"])
 
-                if team.members.count() == 11:
+                if team.members.count() == 8:
                     return Response({"에러": "팀이 모두 찼습니다."})
 
                 for game_team in qs.filter(game=game):

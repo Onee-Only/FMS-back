@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         now = datetime.datetime.now().date()
-        if Game.objects.filter(date=now).count == 0:
+        if Game.objects.filter(date=now).count() == 0:
             lunch_game = Game.objects.create(
                 weekday=now.isoweekday(),
                 status=Game.Status.BEFORE,
