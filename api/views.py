@@ -84,6 +84,9 @@ class GameDetailView(RetrieveUpdateAPIView):
     queryset = models.Game.objects.all()
     serializer_class = serializers.GameSerializer
 
+    def put(self, request, *args, **kwargs):
+        raise PermissionDenied()
+
 
 class AddGameMemberView(GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -123,7 +126,7 @@ class AddGameMemberView(GenericAPIView):
 
 class GameGoalManageView(utils.UpdateDestroyAPIView):
     permission_classes = [IsAdminUser]
-    serializer_class = serializers.GoalSerializer
+    serializer_class = serializers.GoalManageSerializer
 
     def get_object(self):
         return self.get_queryset()
@@ -143,7 +146,7 @@ class GameGoalManageView(utils.UpdateDestroyAPIView):
 
 
 class GameGoalListView(ListCreateAPIView):
-    serializer_class = serializers.GoalSerializer
+    serializer_class = serializers.GoalRetrieveSerializer
 
     def get_object(self):
         return self.get_queryset()
@@ -155,3 +158,14 @@ class GameGoalListView(ListCreateAPIView):
             return goal
         except models.Game.DoesNotExist or models.Goal.DoesNotExist:
             raise Http404()
+
+    def create(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied()
+        serializer = serializers.GoalManageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )

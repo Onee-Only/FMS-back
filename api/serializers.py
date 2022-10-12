@@ -65,7 +65,23 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = ("members", "goals")
 
 
-class GoalSerializer(serializers.ModelSerializer):
+class GoalRetrieveSerializer(serializers.ModelSerializer):
+    team = serializers.SerializerMethodField(read_only=True)
+    goal_player = MemberSerializer()
+    assist_player = MemberSerializer()
+
+    class Meta:
+        model = models.Goal
+        fields = "__all__"
+
+    def get_team(self, obj):
+        for team in obj.game.teams.all():
+            if obj.goal_player in team.members.all():
+                return team.pk
+        raise Http404()
+
+
+class GoalManageSerializer(serializers.ModelSerializer):
     team = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -92,7 +108,7 @@ class GoalSerializer(serializers.ModelSerializer):
 
 class GameSerializer(serializers.ModelSerializer):
     teams = TeamSerializer(many=True)
-    goals = GoalSerializer(many=True)
+    goals = GoalRetrieveSerializer(many=True)
 
     class Meta:
         model = models.Game
