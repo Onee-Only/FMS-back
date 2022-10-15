@@ -1,1 +1,4 @@
 config/log/games.log
+__pycache__/
+*.py[cod]
+.env

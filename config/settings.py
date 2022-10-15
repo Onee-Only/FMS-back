@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-00&4xx&4r1x(d$ixeixqi)2r)p=ee=%i6nd80z-&9w6&cp3rtc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -41,13 +41,13 @@ INSTALLED_APPS = [
     # rest-framework
     "rest_framework",
     "rest_framework.authtoken",
-    "rest_auth",
+    "dj_rest_auth",
     # allauth
     "django.contrib.sites",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "rest_auth.registration",
+    "dj_rest_auth.registration",
     # third party
     "django_crontab",
     # my app
@@ -69,7 +69,9 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            os.path.join(BASE_DIR, "templates"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -146,7 +148,6 @@ AUTH_USER_MODEL = "api.CustomUser"
 SITE_ID = 1
 
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = "email"
@@ -154,6 +155,35 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 REST_AUTH_REGISTER_SERIALIZERS = {
     "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
 }
+
+# 이메일 인증
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"  # 메일 호스트 서버
+
+EMAIL_PORT = "587"  # gmail과 통신하는 포트
+
+EMAIL_USE_TLS = True  # TLS 보안 방법
+
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")  # 발신할 이메일
+
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")  # 발신할 메일의 비밀번호
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+URL_FRONT = None
+
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[FMS] : "
+
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/v1/users"
+
 
 CRONJOBS = [
     # 게임 만들기
