@@ -15,12 +15,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
-from api.views import ResendEmailView, SignupView, EmailConfirmView
+from api.views.auth import (
+    ResendEmailView,
+    SignupView,
+    EmailConfirmView,
+    ConfirmPasswordResetView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("v1/", include("api.urls")),
     path("auth/", include("dj_rest_auth.urls")),
+    path(
+        "auth/password/reset/confirm/<str:uidb64>/<str:token>",
+        ConfirmPasswordResetView.as_view(),
+        name="password_reset_confirm",
+    ),
     path("auth/signup/", SignupView.as_view()),
     re_path(
         r"^auth/signup/account-confirm-email/(?P<key>[-:\w]+)/$",
