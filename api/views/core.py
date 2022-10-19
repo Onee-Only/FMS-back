@@ -1,5 +1,4 @@
 from django.http import Http404
-from django.db.models import F, Sum
 from django.shortcuts import redirect, reverse
 from rest_framework import status
 from rest_framework.response import Response
@@ -17,12 +16,7 @@ from .. import models, serializers, utils
 
 class UserListView(ListAPIView):
     serializer_class = serializers.UserListSerializer
-
-    def get_queryset(self):
-        queryset = models.CustomUser.objects.annotate(
-            attack_points=F("goals") + F("assists")
-        ).order_by("-attack_points")
-        return queryset
+    queryset = models.CustomUser.objects.order_by("rank")
 
 
 class UserManageView(RetrieveUpdateDestroyAPIView):
@@ -57,6 +51,12 @@ class UserManageView(RetrieveUpdateDestroyAPIView):
             instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        utils.sort_rank()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class GameListView(ListAPIView):
@@ -137,6 +137,7 @@ class GameGoalManageView(utils.UpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.goals_assists_change(False)
+        utils.sort_rank()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 

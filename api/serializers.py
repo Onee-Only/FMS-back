@@ -4,7 +4,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
 from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
-from . import models
+from . import models, utils
 
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -43,7 +43,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.CustomUser
-        fields = ("id", "username", "grade", "goals", "assists", "attack_point")
+        fields = ("id", "username", "grade", "goals", "assists", "attack_point", "rank")
 
 
 class UserManageSerializer(serializers.ModelSerializer):
@@ -99,12 +99,14 @@ class GoalManageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         obj = models.Goal.objects.create(**validated_data)
         obj.goals_assists_change(True)
+        utils.sort_rank()
         return obj
 
     def update(self, instance, validated_data):
         instance.goals_assists_change(False)
         instance = super().update(instance, validated_data)
         instance.goals_assists_change(True)
+        utils.sort_rank()
         return instance
 
 

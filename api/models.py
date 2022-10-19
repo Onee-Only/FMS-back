@@ -22,6 +22,7 @@ class CustomUser(AbstractUser):
     grade = models.IntegerField(choices=Grades.choices)
     assists = models.IntegerField(validators=[MinValueValidator(0)], default=0)
     goals = models.IntegerField(validators=[MinValueValidator(0)], default=0)
+    rank = models.IntegerField(validators=[MinValueValidator(0)], default=0)
 
     def __str__(self):
         return self.username

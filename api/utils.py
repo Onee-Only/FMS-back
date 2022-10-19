@@ -1,7 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.db.models import F
 from rest_framework import mixins
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.generics import GenericAPIView
+from api.models import CustomUser
 
 
 class UpdateDestroyAPIView(
@@ -39,3 +41,24 @@ class IsStaffOrOwnerOrReadOnly(BasePermission):
                 )
 
         return False
+
+
+def sort_rank():
+
+    players = CustomUser.objects.annotate(
+        attack_point=F("assists") + F("goals")
+    ).order_by("-attack_point")
+    players_list = list(players)
+
+    rank = 0
+    attack_point = 0
+    first_player = players.first()
+    for player in players_list:
+        if player != first_player:
+            if player.get_attack_point() == attack_point:
+                rank -= 1
+        attack_point = player.get_attack_point()
+        rank += 1
+        player.rank = rank
+
+    CustomUser.objects.bulk_update(players, ["rank"])

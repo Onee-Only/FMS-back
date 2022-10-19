@@ -8,8 +8,9 @@ from dj_rest_auth.registration.views import (
     RegisterView,
     ConfirmEmailView,
 )
-from allauth.account import app_settings
 from allauth.account.models import EmailAddress
+
+from api import utils
 
 
 class ResendEmailView(ResendEmailVerificationView):
@@ -46,6 +47,7 @@ class SignupView(RegisterView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         data = self.get_response_data(user)
+        utils.sort_rank()
 
         if data:
             response = Response(
@@ -66,8 +68,7 @@ class EmailConfirmView(ConfirmEmailView):
             email = EmailAddress.objects.get(email=self.object.email_address)
             if email.verified:
                 return Response({"에러": "이미 인증되었습니다."}, status=status.HTTP_403_FORBIDDEN)
-            if app_settings.CONFIRM_EMAIL_ON_GET:
-                return self.post(*args, **kwargs)
+            return self.post(*args, **kwargs)
         except EmailAddress.DoesNotExist:
             raise Http404()
 
