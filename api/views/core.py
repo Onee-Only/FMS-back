@@ -1,4 +1,5 @@
 from django.http import Http404
+from django.db.models import F, Sum
 from django.shortcuts import redirect, reverse
 from rest_framework import status
 from rest_framework.response import Response
@@ -18,14 +19,9 @@ class UserListView(ListAPIView):
     serializer_class = serializers.UserListSerializer
 
     def get_queryset(self):
-        ordering = self.request.GET.get("ordering", None)
-        if ordering is not None:
-            if ordering == "goals":
-                queryset = models.CustomUser.objects.order_by("-goals")
-            elif ordering == "assists":
-                queryset = models.CustomUser.objects.order_by("-assists")
-        else:
-            queryset = models.CustomUser.objects.all()
+        queryset = models.CustomUser.objects.annotate(
+            attack_points=F("goals") + F("assists")
+        ).order_by("-attack_points")
         return queryset
 
 

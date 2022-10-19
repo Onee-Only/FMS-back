@@ -39,21 +39,23 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
+    attack_point = serializers.IntegerField(source="get_attack_point")
+
     class Meta:
         model = models.CustomUser
-        fields = ("pk", "username", "grade", "goals", "assists")
+        fields = ("id", "username", "grade", "goals", "assists", "attack_point")
 
 
 class UserManageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
-        fields = ("pk", "username", "is_staff", "grade", "goals", "assists")
+        fields = ("id", "username", "is_staff", "grade", "goals", "assists")
 
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.CustomUser
-        fields = ("pk", "grade", "username")
+        fields = ("id", "grade", "username")
 
 
 class TeamSerializer(serializers.ModelSerializer):

@@ -23,6 +23,12 @@ class CustomUser(AbstractUser):
     assists = models.IntegerField(validators=[MinValueValidator(0)], default=0)
     goals = models.IntegerField(validators=[MinValueValidator(0)], default=0)
 
+    def __str__(self):
+        return self.username
+
+    def get_attack_point(self):
+        return self.goals + self.assists
+
 
 class Game(models.Model):
     class Status(models.TextChoices):
