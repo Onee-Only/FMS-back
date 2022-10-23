@@ -29,4 +29,6 @@ class Command(BaseCommand):
             if count > 8:
                 team2.members.add(user)
             else:
+                if count > 16:
+                    break
                 team1.members.add(user)

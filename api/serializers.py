@@ -1,4 +1,3 @@
-from django.http import Http404
 from rest_framework import serializers
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from allauth.account import app_settings as allauth_settings
@@ -38,18 +37,40 @@ class CustomRegisterSerializer(RegisterSerializer):
         return user
 
 
-class UserListSerializer(serializers.ModelSerializer):
+class BaseUserSerializer(serializers.ModelSerializer):
     attack_point = serializers.IntegerField(source="get_attack_point")
 
     class Meta:
         model = models.CustomUser
-        fields = ("id", "username", "grade", "goals", "assists", "attack_point", "rank")
+        fields = (
+            "id",
+            "username",
+            "grade",
+            "goals",
+            "assists",
+            "attack_point",
+            "rank",
+        )
+        abstract = True
 
 
-class UserManageSerializer(serializers.ModelSerializer):
+class UserListSerializer(BaseUserSerializer):
+    me = serializers.SerializerMethodField()
+
     class Meta:
-        model = models.CustomUser
-        fields = ("id", "username", "is_staff", "grade", "goals", "assists")
+        model = BaseUserSerializer.Meta.model
+        fields = BaseUserSerializer.Meta.fields
+        fields += ("me",)
+
+    def get_me(self, obj):
+        return obj.pk == self.context["request"].user.pk
+
+
+class UserManageSerializer(BaseUserSerializer):
+    class Meta:
+        model = BaseUserSerializer.Meta.model
+        fields = BaseUserSerializer.Meta.fields
+        fields += ("is_staff",)
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -68,7 +89,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
 
 class GoalRetrieveSerializer(serializers.ModelSerializer):
-    team = serializers.SerializerMethodField(read_only=True)
+    team = serializers.IntegerField(source="get_team")
     goal_player = MemberSerializer()
     assist_player = MemberSerializer()
 
@@ -76,25 +97,13 @@ class GoalRetrieveSerializer(serializers.ModelSerializer):
         model = models.Goal
         fields = "__all__"
 
-    def get_team(self, obj):
-        for team in obj.game.teams.all():
-            if obj.goal_player in team.members.all():
-                return team.pk
-        raise Http404()
-
 
 class GoalManageSerializer(serializers.ModelSerializer):
-    team = serializers.SerializerMethodField(read_only=True)
+    team = serializers.IntegerField(source="get_team")
 
     class Meta:
         model = models.Goal
         fields = "__all__"
-
-    def get_team(self, obj):
-        for team in obj.game.teams.all():
-            if obj.goal_player in team.members.all():
-                return team.pk
-        raise Http404()
 
     def create(self, validated_data):
         obj = models.Goal.objects.create(**validated_data)

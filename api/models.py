@@ -1,4 +1,5 @@
 from django.db import models
+from django.http import Http404
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 
@@ -80,3 +81,9 @@ class Goal(models.Model):
         self.goal_player.save()
         self.assist_player.assists += num
         self.assist_player.save()
+
+    def get_team(self):
+        for team in self.game.teams.all():
+            if self.goal_player in team.members.all():
+                return team.pk
+        raise Http404()

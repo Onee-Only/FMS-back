@@ -6,6 +6,7 @@ app_name = "api-v1"
 urlpatterns = [
     path("users", core.UserListView.as_view()),
     path("users/<int:pk>", core.UserManageView.as_view()),
+    path("users/me", core.get_me),
     path("games", core.GameListView.as_view()),
     path("games/<int:pk>", core.GameDetailView.as_view(), name="game-detail"),
     path("games/<int:game_pk>/goals", core.GameGoalListView.as_view()),

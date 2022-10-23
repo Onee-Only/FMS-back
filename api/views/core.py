@@ -9,6 +9,7 @@ from rest_framework.generics import (
     RetrieveUpdateAPIView,
     GenericAPIView,
 )
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .. import models, serializers, utils
@@ -17,6 +18,17 @@ from .. import models, serializers, utils
 class UserListView(ListAPIView):
     serializer_class = serializers.UserListSerializer
     queryset = models.CustomUser.objects.order_by("rank")
+
+
+@api_view(["GET"])
+def get_me(request):
+
+    if request.user.is_authenticated:
+        user = models.CustomUser.objects.get(pk=request.user.pk)
+        serializer = serializers.UserManageSerializer(user)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response(data={"오류": "익명 유저입니다."}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserManageView(RetrieveUpdateDestroyAPIView):
