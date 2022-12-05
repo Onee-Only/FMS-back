@@ -78,8 +78,8 @@ class ConfirmPasswordResetView(GenericAPIView):
         uidb64 = kwargs["uidb64"]
         token = kwargs["token"]
         data = {
-            "new_password1": "k4319812",
-            "new_password2": "k4319812",
+            "new_password1": kwargs["password"],
+            "new_password2": kwargs["password"],
             "uid": uidb64,
             "token": token,
         }
